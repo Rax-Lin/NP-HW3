@@ -60,9 +60,14 @@ bash start_player_client.sh
   - `server/players.json`、`server/rooms.json`、`server/room_chats.json`、`server/play_history.json`
   - `player_client/downloads/` 底下的玩家資料夾
 
+## Error 處理
+- 若client下載遊戲後，在建立或是進入房間時仍顯示遊戲尚未下載。請改成進入developer_client/ 底下執行 python3 developer_server.py
+- 對於部分錯誤，皆可嘗試不使用 bash, 改成進入各檔案(比如server/, developer_clienter/)下進行。
+- 請確保能執行GUI (tkinter) 相關套件
+
 ## Demo 提示
 - 所有操作都在選單內完成，無需額外指令。
 - 房間聊天僅同房玩家可見，房間刪除/遊戲結束會清理聊天室，且聊天功能僅下載 plugin 者可見。
 - 房號分配會使用最小可用編號（補洞）。
 - 上傳遊戲需包含 `game_server.py`、`game_client.py`，玩家需先下載最新版本再啟動。
-
+- GUI 遊戲（Tkinter）需系統有安裝 `python3-tk` 並有可用的 DISPLAY（桌面/ssh -X 或虛擬顯示）；缺少這些環境時 GUI 會無法啟動。
