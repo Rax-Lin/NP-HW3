@@ -61,7 +61,7 @@ def handle_upload_game(data, conn, db):
         db["games"][game_key]["active"] = True
 
     # new version 的 zip 檔案路徑
-    file_path = f"{UPLOAD_DIR}{game_key}_{version}.zip"
+    file_path = os.path.join(UPLOAD_DIR, f"{game_key}_{version}.zip")
     db["games"][game_key]["versions"][version] = {
         "file_path": file_path
     }
@@ -125,7 +125,7 @@ def handle_update_game(data, conn, db):
         return
 
     # 準備接新版本檔案
-    file_path = f"{UPLOAD_DIR}{game_key}_{version}.zip"
+    file_path = os.path.join(UPLOAD_DIR, f"{game_key}_{version}.zip")
     game["versions"][version] = {
         "file_path": file_path
     }
