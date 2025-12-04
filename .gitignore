@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+*.zip
+
+# 玩家下載的遊戲不要 push
+player_client/downloads/
+
+# server 運行時產生的資料，不 push
+server/game_runtime/
+server/uploaded_games/
+
+# server json 資料（會不斷更新，不適合 push）
+server/players.json
+server/rooms.json
+server/play_history.json
+server/room_chats.json
+
+# mac / vscode
+.DS_Store
+.vscode/
