@@ -61,8 +61,8 @@ bash start_player_client.sh
   - `player_client/downloads/` 底下的玩家資料夾
 
 ## Error 處理
-- 若client下載遊戲後，在建立或是進入房間時仍顯示遊戲尚未下載。請改成進入developer_client/ 底下執行 python3 developer_server.py
-- 對於部分錯誤，皆可嘗試不使用 bash, 改成進入各檔案(比如server/, developer_clienter/)下進行。
+- 若client下載遊戲後，在建立或是進入房間時仍顯示遊戲尚未下載。請改成進入`developer_client/` 底下執行 `python3 developer_server.py`
+- 對於部分錯誤，皆可嘗試不使用 bash, 改成進入各檔案(比如`server/`, `developer_clienter/`)下進行。
 - 請確保能執行GUI (tkinter) 相關套件
 
 ## Demo 提示
