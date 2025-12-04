@@ -221,6 +221,7 @@ def main_menu():
     if not developer or not pwd:
         print("帳號/密碼不可為空")
         main_menu()
+        return
 
     action = "login" if choice == "1" else "register"
     _, res = send_request({"action": action, "name": developer, "password": pwd})
@@ -256,6 +257,7 @@ def main_menu():
             hb_thread.join(timeout=1)
             print("bye bye!\n")
             main_menu()
+            return
         else:
             print("❌ 無效選項，請重新輸入")
 
