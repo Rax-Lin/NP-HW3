@@ -4,8 +4,9 @@ import json
 import os
 import time
 
-DB_FILE = "database.json"
-UPLOAD_DIR = "uploaded_games/"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_FILE = os.path.join(BASE_DIR, "database.json")
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploaded_games")
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
