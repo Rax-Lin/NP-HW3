@@ -9,6 +9,37 @@ SERVER_PORT_MAX = 6000
 HEARTBEAT_INTERVAL = 30
 
 
+# ========= 連線設定 =========
+def configure_dev_endpoint():
+    """
+    允許使用者決定 developer server IP / 掃描區間。
+    也支援環境變數：
+    - DEV_SERVER_IP
+    - DEV_PORT_START / DEV_PORT_MAX
+    """
+    global SERVER_IP, SERVER_PORT_START, SERVER_PORT_MAX
+
+    env_ip = os.environ.get("DEV_SERVER_IP", SERVER_IP)
+    env_start = os.environ.get("DEV_PORT_START")
+    env_max = os.environ.get("DEV_PORT_MAX")
+    if env_start and env_start.isdigit():
+        SERVER_PORT_START = int(env_start)
+    if env_max and env_max.isdigit():
+        SERVER_PORT_MAX = int(env_max)
+
+    print("=== Developer Server 連線設定 ===")
+    print(f"1. 本機 ({env_ip})")
+    print("2. 自訂 IP")
+    choice = input("選擇: ").strip()
+    if choice == "2":
+        ip = input("輸入 Developer Server IP (例如 10.1.14.12 或 140.113.17.12): ").strip()
+        if ip:
+            SERVER_IP = ip
+    else:
+        SERVER_IP = env_ip
+    print(f"➡ 使用 Developer Server {SERVER_IP}，掃描埠 {SERVER_PORT_START}-{SERVER_PORT_MAX}")
+
+
 def connect_to_server():
     """
     find the developer server by scanning ports
@@ -263,4 +294,5 @@ def main_menu():
 
 
 if __name__ == "__main__":
+    configure_dev_endpoint()
     main_menu()

@@ -65,6 +65,34 @@ def save_installed_plugins(player, plugin_ids):
         json.dump({"installed": list(plugin_ids)}, f, indent=4)
 
 
+# ========= 連線設定 =========
+def configure_lobby_endpoint():
+    """
+    允許使用者在啟動時決定要連本機或遠端工作站。
+    也支援環境變數：
+    - LOBBY_IP：指定 IP，若存在將當成預設值
+    - LOBBY_PORT：指定 Port，若存在則覆寫
+    """
+    global LOBBY_IP, LOBBY_PORT
+
+    env_ip = os.environ.get("LOBBY_IP", LOBBY_IP)
+    env_port = os.environ.get("LOBBY_PORT")
+    if env_port and env_port.isdigit():
+        LOBBY_PORT = int(env_port)
+
+    print("=== Lobby 連線設定 ===")
+    print(f"1. 本機 ({env_ip})")
+    print("2. 自訂 IP")
+    choice = input("選擇: ").strip()
+    if choice == "2":
+        ip = input("輸入 Lobby Server IP (例如 10.1.14.12 或 140.113.17.12): ").strip()
+        if ip:
+            LOBBY_IP = ip
+    else:
+        LOBBY_IP = env_ip
+    print(f"➡ 使用 Lobby 位址 {LOBBY_IP}:{LOBBY_PORT}")
+
+
 # ========= P1：瀏覽遊戲商城 =========
 def view_games():
     res = send_request({"action": "get_games"})
@@ -726,6 +754,8 @@ def login_flow():
 
 
 if __name__ == "__main__":
+    configure_lobby_endpoint()
+
     player = login_flow()
     if not player:
         exit(1)

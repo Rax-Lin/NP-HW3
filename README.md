@@ -67,6 +67,7 @@ bash start_player_client.sh
 
 ## Demo 提示
 - 所有操作都在選單內完成，無需額外指令。
+- 輸入 `bash... `後，client 端可根據 server 端的ip位址是在本機上或是其他工作站而調整。
 - 房間聊天僅同房玩家可見，房間刪除/遊戲結束會清理聊天室，且聊天功能僅下載 plugin 者可見。
 - 房號分配會使用最小可用編號（補洞）。
 - 上傳遊戲需包含 `game_server.py`、`game_client.py`，玩家需先下載最新版本再啟動。
