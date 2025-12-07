@@ -182,7 +182,7 @@ def save_rooms(rooms):
 
 
 def load_play_history():
-    # play_history 用來判斷玩家是否玩過某款遊戲（P4）
+    # play_history , check if the player has played this game before（P4）
     return load_json(PLAY_FILE, {"records": []})
 
 
@@ -207,7 +207,7 @@ def clear_chat_room(room_id):
         save_chats(chats)
 
 
-# ========= P1：取得商城遊戲列表（含平均評分） =========
+# ========= P1：取得商城遊戲列表（include rating） =========
 def handle_get_games(conn):
     db = load_db()
 
@@ -236,7 +236,7 @@ def handle_get_games(conn):
     conn.sendall(json.dumps(response).encode())
 
 
-# ========= P2：玩家下載遊戲 =========
+# ========= P2：download game =========
 def handle_download(req, conn):
     """
     req 內容：
@@ -273,7 +273,7 @@ def handle_download(req, conn):
         conn.sendall(json.dumps({"status": "error", "message": "game file missing"}).encode())
         return
 
-    # 玩家下載目的地（根據作業要求：每位玩家一個資料夾）
+    # 玩家下載目的地（-> 每位玩家一個資料夾）
     dst_dir = os.path.join(ROOT_DIR, "player_client", "downloads", player)
     os.makedirs(dst_dir, exist_ok=True)
     dst_path = os.path.join(dst_dir, os.path.basename(src_path))
@@ -283,7 +283,7 @@ def handle_download(req, conn):
     conn.sendall(json.dumps({"status": "ok", "message": "download success"}).encode())
 
 
-# ========= P3：建立房間 =========
+# ========= P3：create room =========
 def handle_create_room(req, conn):
     """
     req:
@@ -329,9 +329,9 @@ def handle_create_room(req, conn):
         return
 
     # 分配最小可用房號（從 1 開始）
-    existing_ids = sorted(r["room_id"] for r in rooms["rooms"])
+    existing_ids = sorted(r["room_id"] for r in rooms["rooms"]) # for fear that room ids are not continuous
     new_room_id = 1
-    for rid in existing_ids:
+    for rid in existing_ids: # find the hole, then we can reuse the id
         if rid == new_room_id:
             new_room_id += 1
         elif rid > new_room_id:
@@ -350,7 +350,7 @@ def handle_create_room(req, conn):
     rooms["rooms"].append(new_room)
     save_rooms(rooms)
 
-    # 記錄 play_history（給 P4 用）
+    # record play_history（for P4 ）
     ph = load_play_history()
     ph["records"].append({
         "player": player,
@@ -366,7 +366,7 @@ def handle_create_room(req, conn):
 
 
 
-# ========= P4：取得遊戲詳細資訊 =========
+# ========= P4：get the information of game =========
 def handle_get_game_detail(req, conn):
     """
     req 內容：
@@ -405,7 +405,7 @@ def handle_get_game_detail(req, conn):
     conn.sendall(json.dumps(res).encode())
 
 
-# ========= P4：提交評分 =========
+# ========= P4：submit rating =========
 def handle_submit_rating(req, conn):
     """
     req 內容：
@@ -426,8 +426,8 @@ def handle_submit_rating(req, conn):
         conn.sendall(json.dumps({"status": "error", "message": "player not logged in"}).encode())
         return
 
-    # 基本檢查分數合法範圍
-    if not (1 <= score <= 5):
+    # check score range
+    if not (1 <= score <= 5): # five rating review
         conn.sendall(json.dumps({"status": "error", "message": "score must be 1~5"}).encode())
         return
 
@@ -436,14 +436,14 @@ def handle_submit_rating(req, conn):
         conn.sendall(json.dumps({"status": "error", "message": "game not found"}).encode())
         return
 
-    # 檢查玩家是否有玩過這款遊戲（依照 play_history）
+    # check if the player has played this game before（依照 play_history）
     ph = load_play_history()
     played = any((r["player"] == player and r["game_key"] == game_key) for r in ph["records"])
     if not played:
         conn.sendall(json.dumps({"status": "error", "message": "you have not played this game"}).encode())
         return
 
-    # 寫入評分
+    # write rating
     game = db["games"][game_key]
     if "ratings" not in game:
         game["ratings"] = []
@@ -508,7 +508,8 @@ def handle_join_room(req, conn):
 
 def cleanup_room_after_game(room_id):
     """
-    遊戲子程序結束後，將房間移除，避免下局被卡在 started 狀態
+    Debug : 
+    遊戲的 child process 結束後，將房間移除，避免下局被卡在 started 狀態
     """
     rooms = load_rooms()
     rooms["rooms"] = [r for r in rooms["rooms"] if r["room_id"] != room_id]
@@ -624,7 +625,7 @@ def handle_delete_room(req, conn):
     conn.sendall(json.dumps({"status":"ok","message":"room deleted"}).encode())
 
 
-# ========= PL1：取得可用 Plugin 清單 =========
+# PL1：Get Plugin list
 def handle_get_plugins(conn):
     """
     Plugin 只是由 Lobby Server 提供可用清單；
@@ -637,7 +638,7 @@ def handle_get_plugins(conn):
     conn.sendall(json.dumps(res).encode())
 
 
-# ========= PL3：房間聊天 - 傳送訊息 =========
+# Chatting in the room (PL1)
 def handle_room_chat_send(req, conn):
     """
     req:
@@ -678,7 +679,7 @@ def handle_room_chat_send(req, conn):
     conn.sendall(json.dumps({"status":"ok","message":"chat sent"}).encode())
 
 
-# ========= PL3：房間聊天 - 取得歷史訊息 =========
+# Get the chatting history
 def handle_room_chat_fetch(req, conn):
     """
     req:
@@ -713,7 +714,7 @@ def handle_room_chat_fetch(req, conn):
     }).encode())
 
 
-# ========= 連線入口，分派各種 action =========
+# Important !!!!! : Main server loop
 def handle_client(conn, addr):
     print(f"[Lobby] Connected by {addr}")
 
