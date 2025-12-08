@@ -527,14 +527,20 @@ def handle_join_room(req, conn):
 
 def cleanup_room_after_game(room_id):
     """
-    Debug : 
-    遊戲的 child process 結束後，將房間移除，避免下局被卡在 started 狀態
+    遊戲的 child process 結束後，重置房間狀態（保留房間與玩家），
+    讓同一房間可以再次啟動下一局。
     """
     rooms = load_rooms()
-    rooms["rooms"] = [r for r in rooms["rooms"] if r["room_id"] != room_id]
-    save_rooms(rooms)
-    clear_chat_room(room_id)
-    print(f"[Lobby] Room {room_id} cleaned after game finished")
+    updated = False
+    for r in rooms["rooms"]:
+        if r["room_id"] == room_id:
+            r["started"] = False
+            r["server_port"] = None
+            updated = True
+            break
+    if updated:
+        save_rooms(rooms)
+        print(f"[Lobby] Room {room_id} reset after game finished")
 
 
 def handle_start_room(req, conn):
