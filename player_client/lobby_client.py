@@ -26,9 +26,18 @@ def send_request(data):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((LOBBY_IP, LOBBY_PORT))
     s.sendall(json.dumps(data).encode())
-    raw = s.recv(4096)
+
+    # Responses that include zipped game data can exceed 4096 bytes,
+    # so keep reading until the server closes the connection.
+    chunks = []
+    while True:
+        buf = s.recv(4096)
+        if not buf:
+            break
+        chunks.append(buf)
     s.close()
 
+    raw = b"".join(chunks)
     try:
         return json.loads(raw.decode())
     except:
