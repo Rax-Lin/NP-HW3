@@ -774,7 +774,7 @@ def handle_client(conn, addr):
 def start_lobby():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind(("0.0.0.0", 6060))
-    server.listen(5)
+    server.listen(5) # can be changed here if a lot of people want to connect in the same time
 
     print("[Lobby Server] Running on port 6060...")
 
@@ -832,7 +832,7 @@ def start_game_server(game_key, version, zip_path, room_id):
     server_script = os.path.join(runtime_dir, "game_server.py")
 
     if not os.path.exists(server_script):
-        # 如果你之後想更嚴謹，可以把錯誤記錄下來
+        # record log for debug
         print(f"[WARN] game_server.py not found in {runtime_dir}")
         return None
 
