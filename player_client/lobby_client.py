@@ -26,9 +26,13 @@ def send_request(data):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((LOBBY_IP, LOBBY_PORT))
     s.sendall(json.dumps(data).encode())
+    # 半關閉寫端，讓 server 知道不再有更多資料
+    try:
+        s.shutdown(socket.SHUT_WR)
+    except OSError:
+        pass
 
-    # Responses that include zipped game data can exceed 4096 bytes,
-    # so keep reading until the server closes the connection.
+    # Responses (e.g., download_game) can be large; keep reading until server closes.
     chunks = []
     while True:
         buf = s.recv(4096)
