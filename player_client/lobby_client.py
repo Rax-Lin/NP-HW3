@@ -8,9 +8,9 @@ import threading
 LOBBY_IP   = "127.0.0.1"
 LOBBY_PORT = 6060
 BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
-HEARTBEAT_INTERVAL = 30
+HEARTBEAT_INTERVAL = 30 # seconds
 
-# 每位玩家自己的 plugin 安裝紀錄
+# the record of installed plugins for each player
 PLUGIN_FILE_TEMPLATE = "plugins_{player}.json"
 
 

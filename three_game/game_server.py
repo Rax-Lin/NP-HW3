@@ -12,10 +12,12 @@ import threading
 import argparse
 import json
 import time
+import socket
 game_over = threading.Event()
 
 ROUND_POINTS = 1
 WIN_SCORE = 3
+ACTION_TIMEOUT = 10  # seconds to wait for a player's action before auto-picking
 
 
 def recv_json(conn):
@@ -70,13 +72,8 @@ class GameServer:
             self.players.append((name, conn))
             self.scores.setdefault(name, 0)
         print(f"[ThreeGame] {name} joined from {addr}")
-        # 等待遊戲結束
+        # 等待遊戲結束（不再讀取 conn，避免吃掉後續行為封包）
         while not game_over.is_set():
-            try:
-                if conn.recv(1) == b"":
-                    break
-            except:
-                pass
             time.sleep(0.1)
         try:
             conn.close()
@@ -89,7 +86,7 @@ class GameServer:
         self.broadcast({"prompt": "CHOOSE", "hint": "A <target> or R <target>"})
 
         pending = {p: c for p, c in self.players}
-        wait_cycles = {p: 0 for p, _ in self.players}
+        last_wait_broadcast = 0
 
         while pending:
             for name, conn in list(pending.items()):
@@ -114,13 +111,23 @@ class GameServer:
                         actions[name] = {"type": t, "target": target}
                     pending.pop(name, None)
                 else:
-                    wait_cycles[name] += 1
-                    # 超過 15 秒未回應則給預設動作，避免永遠卡住
-                    if wait_cycles[name] >= 15:
+                    # 若連線已斷，避免永遠等待：給預設動作並移除
+                    try:
+                        peek = conn.recv(1, socket.MSG_PEEK)
+                    except Exception:
+                        peek = b""
+                    if peek == b"":
                         actions[name] = {"type": "attack", "target": name}
                         pending.pop(name, None)
-            # 若尚有人未回應，稍等再試
+            # 若尚有人未回應，稍等再試並廣播等待名單
             if pending:
+                now = time.time()
+                if now - last_wait_broadcast >= 1:
+                    self.broadcast({
+                        "msg": "WAITING",
+                        "pending": list(pending.keys())
+                    })
+                    last_wait_broadcast = now
                 try:
                     time.sleep(0.1)
                 except:

@@ -21,9 +21,11 @@ class GameClientGUI:
         self.selected_action = None
         self.selected_target = None
         self.locked = False
+        
 
         self.root = tk.Tk()
         self.root.title(f"Attack/Reflect - {self.name}")
+        self.root.config(cursor = "arrow")
 
         self.msg_var = tk.StringVar(value="Connecting...")
         tk.Label(self.root, textvariable=self.msg_var, justify="left", anchor="w").pack(fill="x", padx=10, pady=5)
