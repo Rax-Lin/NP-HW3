@@ -93,7 +93,7 @@ def configure_lobby_endpoint():
     print(f"➡ 使用 Lobby 位址 {LOBBY_IP}:{LOBBY_PORT}")
 
 
-# ========= P1：瀏覽遊戲商城 =========
+# ========= P1：view game =========
 def view_games():
     res = send_request({"action": "get_games"})
 
@@ -105,7 +105,7 @@ def view_games():
     print("\n=== 可遊玩遊戲列表 ===")
     for idx, g in enumerate(games):
         print(f"{idx+1}. {g['name']} ({g['latest_version']}) - by {g['developer']}")
-        # 顯示平均評分
+        # average rating
         if g["avg_score"] is not None:
             print(f"    ★ {g['avg_score']:.2f} ({g['rating_count']}則評價)")
         else:
@@ -114,7 +114,7 @@ def view_games():
     return games
 
 
-# ========= P2：下載 / 更新遊戲 =========
+# ========= P2：Download / updated =========
 def download_game(player):
     games = view_games()
     if not games:
@@ -127,7 +127,7 @@ def download_game(player):
         print("❌ 無效輸入")
         return
 
-    # 這裡簡化版本處理：永遠抓最新版本
+    # Rax : always get new version
     req = {
         "action": "download_game",
         "player": player,
@@ -143,7 +143,7 @@ def download_game(player):
     print("📣", res["message"])
 
 
-# ========= P3：啟動遊戲（示意用 launcher） =========
+# ========= P3：launch game（示意用 launcher） =========
 def ensure_game_unzipped_for_player(player, game_key, version):
     """
     確保玩家端的 zip 已解壓縮：
@@ -184,7 +184,7 @@ def has_latest_version(player, game_key, version):
     zip_path = os.path.join(BASE_DIR, "downloads", player, f"{game_key}_{version}.zip")
     if os.path.exists(zip_path):
         return True
-    # 若有其他版本但不是最新版，提醒更新
+    # 若有其他版本但不是最新版，提醒更新 
     if local_versions(player, game_key):
         print("⚠ 本地版本與伺服器不同，請先下載/更新最新版本")
     else:
