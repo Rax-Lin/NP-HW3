@@ -1,4 +1,5 @@
 import socket
+import errno
 import threading
 import json
 import os
@@ -784,10 +785,26 @@ def handle_client(conn, addr):
 
 def start_lobby():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(("0.0.0.0", 6060))
+    base_port = int(os.environ.get("LOBBY_PORT", "6060"))
+    chosen_port = None
+
+    # Try the requested port; if in use, probe subsequent ports.
+    for port in [base_port] + list(range(base_port + 1, base_port + 11)):
+        try:
+            server.bind(("0.0.0.0", port))
+            chosen_port = port
+            break
+        except OSError as e:
+            if e.errno in (errno.EADDRINUSE, errno.EACCES):
+                continue
+            raise
+
+    if chosen_port is None:
+        raise RuntimeError("No available port found for lobby server")
+
     server.listen(5) # can be changed here if a lot of people want to connect in the same time
 
-    print("[Lobby Server] Running on port 6060...")
+    print(f"[Lobby Server] Running on port {chosen_port}...")
 
     def expire_loop():
         while True:
