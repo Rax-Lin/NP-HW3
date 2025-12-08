@@ -4,6 +4,7 @@ import os
 import subprocess
 import zipfile
 import threading
+import base64
 
 LOBBY_IP   = "127.0.0.1"
 LOBBY_PORT = 6060
@@ -136,9 +137,22 @@ def download_game(player):
     }
 
     res = send_request(req)
-    if not res:
-        print("❌ 下載失敗（無回應）")
+    if not res or res.get("status") != "ok":
+        print("❌ 下載失敗：", (res or {}).get("message", "無回應"))
         return
+
+    # 儲存 zip 到玩家本地 downloads/{player}/
+    b64_data = res.get("file_data")
+    filename = res.get("filename")
+    if not b64_data or not filename:
+        print("❌ 回傳內容缺少檔案資料")
+        return
+
+    base_dir = os.path.join(BASE_DIR, "downloads", player)
+    os.makedirs(base_dir, exist_ok=True)
+    zip_path = os.path.join(base_dir, filename)
+    with open(zip_path, "wb") as f:
+        f.write(base64.b64decode(b64_data))
 
     print("📣", res["message"])
 

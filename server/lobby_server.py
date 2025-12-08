@@ -7,6 +7,7 @@ import subprocess
 import zipfile
 import tempfile
 import time
+import base64
 
 # ========= 檔案路徑設定 =========
 BASE_DIR       = os.path.dirname(os.path.abspath(__file__))
@@ -274,13 +275,23 @@ def handle_download(req, conn):
         return
 
     # 玩家下載目的地（-> 每位玩家一個資料夾）
+    # 讀取 zip 並回傳給 client 儲存（同時保留 server 端拷貝）
+    with open(src_path, "rb") as f:
+        raw_bytes = f.read()
+    b64_data = base64.b64encode(raw_bytes).decode()
+    filename = os.path.basename(src_path)
+
+    # 仍保留一份在 server 端（原本行為）
     dst_dir = os.path.join(ROOT_DIR, "player_client", "downloads", player)
     os.makedirs(dst_dir, exist_ok=True)
-    dst_path = os.path.join(dst_dir, os.path.basename(src_path))
+    shutil.copy(src_path, os.path.join(dst_dir, filename))
 
-    shutil.copy(src_path, dst_path)
-
-    conn.sendall(json.dumps({"status": "ok", "message": "download success"}).encode())
+    conn.sendall(json.dumps({
+        "status": "ok",
+        "message": "download success",
+        "filename": filename,
+        "file_data": b64_data
+    }).encode())
 
 
 # ========= P3：create room =========
