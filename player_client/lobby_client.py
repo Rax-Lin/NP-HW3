@@ -9,7 +9,7 @@ import base64
 LOBBY_IP   = "127.0.0.1"
 LOBBY_PORT = 6060
 BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
-HEARTBEAT_INTERVAL = 30 # seconds
+HEARTBEAT_INTERVAL = 20 # seconds
 
 # the record of installed plugins for each player
 PLUGIN_FILE_TEMPLATE = "plugins_{player}.json"
@@ -799,3 +799,8 @@ if __name__ == "__main__":
     finally:
         stop_hb.set()
         hb_thread.join(timeout=1)
+        # 確保離線通知送出（包含 Ctrl+C）
+        try:
+            send_request({"action":"player_logout","name":player})
+        except:
+            pass

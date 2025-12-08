@@ -120,6 +120,13 @@ def handle_player_logout(req, conn):
         players["players"][name]["online"] = False
         players["players"][name]["last_seen"] = 0
         save_players(players)
+
+    # 清理玩家在房間的紀錄，避免掉線後仍卡在房間內
+    rooms = load_rooms()
+    rooms, removed = cleanup_player_in_rooms(rooms, name)
+    if removed:
+        save_rooms(rooms)
+
     conn.sendall(json.dumps({"status":"ok","message":"logout"}).encode())
 
 
