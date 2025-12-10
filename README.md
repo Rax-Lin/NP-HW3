@@ -2,7 +2,7 @@
 
 ## 環境需求
 - Python 3.8+
-- 不需額外套件（僅標準庫）
+- 若無 tkinter 套件，可透過 `sudo apt-get install python3-tk`
 
 ## 啟動方式（最少步驟）
 在專案根目錄：
