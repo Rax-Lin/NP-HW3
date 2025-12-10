@@ -2,6 +2,7 @@ import socket
 import json
 import os
 import subprocess
+import sys
 import zipfile
 import threading
 import base64
@@ -241,7 +242,7 @@ def launch_game_client(player, game_key, version, room_id, server_ip, server_por
 
     # 使用 blocking run，讓玩家可以直接在同一個終端互動，遊戲結束後再回到大廳
     subprocess.run(
-        ["python", client_script,
+        [sys.executable or "python3", client_script,
          "--server_ip", server_ip,
          "--server_port", str(server_port),
          "--room_id", str(room_id)],
