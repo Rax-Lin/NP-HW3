@@ -764,21 +764,32 @@ def main_menu(player):
 
 
 def login_flow():
-    print("=== 玩家帳號 ===")
-    print("1. 登入")
-    print("2. 註冊並登入")
-    choice = input("選擇: ")
-    player = input("玩家名稱: ").strip()
-    pwd = input("密碼: ").strip()
-    if not player or not pwd:
-        print("帳號/密碼不可為空")
-        return None
-    action = "player_login" if choice == "1" else "player_register"
-    res = send_request({"action": action, "name": player, "password": pwd})
-    if not res or res.get("status") != "ok":
-        print("❌", (res or {}).get("message","登入/註冊失敗"))
-        return None
-    return player
+    while True:
+        print("=== 玩家帳號 ===")
+        print("1. 登入")
+        print("2. 註冊並登入")
+        print("3. 離開")
+        choice = input("選擇: ").strip()
+
+        if choice in {"3", "q", "Q"}:
+            return None
+        if choice not in {"1", "2"}:
+            print("❌ 無效輸入，請重新選擇")
+            continue
+
+        player = input("玩家名稱: ").strip()
+        pwd = input("密碼: ").strip()
+        if not player or not pwd:
+            print("帳號/密碼不可為空，請重新輸入")
+            continue
+
+        action = "player_login" if choice == "1" else "player_register"
+        res = send_request({"action": action, "name": player, "password": pwd})
+        if not res or res.get("status") != "ok":
+            print("❌", (res or {}).get("message", "登入/註冊失敗"))
+            # back to menu without退出
+            continue
+        return player
 
 
 if __name__ == "__main__":
