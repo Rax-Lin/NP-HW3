@@ -11,6 +11,7 @@ class GameClientGUI:
         self.server_ip = server_ip
         self.server_port = server_port
         self.room_id = room_id
+        self.ended = False
         self.sock = None
         self.root = tk.Tk()
         self.root.title(f"RPS - Room {room_id}")
@@ -42,6 +43,23 @@ class GameClientGUI:
         current = self.messages.get()
         self.messages.set((current + "\n" if current else "") + text)
 
+    def _end_game(self, notice=None, dialog_title=None):
+        """Close UI and socket safely from the Tk thread."""
+        if self.ended:
+            return
+        self.ended = True
+        try:
+            if notice:
+                self.append_msg(notice)
+            if dialog_title and notice:
+                messagebox.showinfo(dialog_title, notice)
+        finally:
+            try:
+                if self.sock:
+                    self.sock.close()
+            finally:
+                self.root.destroy()
+
     def listen_loop(self):
         try:
             while True:
@@ -50,22 +68,21 @@ class GameClientGUI:
                     break
                 for line in data.splitlines():
                     if line.startswith("FINAL"):
-                        self.append_msg(line)
-                        messagebox.showinfo("Result", line)
-                        self.root.quit()
+                        # ensure Tk operations run on the UI thread
+                        self.root.after(0, self._end_game, line, "Result")
                         return
                     elif line.startswith("RESULT"):
                         self.append_msg(line)
                     elif line == "CHOOSE":
-                        self.append_msg("choose：Rock/Scissors/Paper")
+                        self.append_msg("choose: Rock / Scissors / Paper")
                     elif line == "WAIT":
                         self.append_msg("wait your opponent...")
                     elif line == "INVALID":
                         self.append_msg("not effective input, please choose again")
                     elif line == "START":
-                        self.append_msg("game start ! make your choice")
+                        self.append_msg("game start! make your choice")
                     elif line == "GAME_OVER":
-                        self.root.quit()
+                        self.root.after(0, self._end_game)
                         return
                     else:
                         self.append_msg(line)
