@@ -235,62 +235,63 @@ def remove_game(developer):
 # 主選單
 # ==========================
 def main_menu():
-    print("=== 開發者帳號 ===")
-    print("1. 登入")
-    print("2. 註冊並登入")
-    print("3. 說掰掰(logout)!")
-    choice = input("選擇: ")
-    if choice == "3":
-        print("bye bye!")
-        return
-    if choice not in {"1", "2"}:
-        print("❌ 輸入錯囉朋友，請重新輸入")
-        main_menu()
-        return
-    developer = input("帳號: ").strip()
-    pwd = input("密碼: ").strip()
-    if not developer or not pwd:
-        print("帳號/密碼不可為空")
-        main_menu()
-        return
-
-    action = "login" if choice == "1" else "register"
-    _, res = send_request({"action": action, "name": developer, "password": pwd})
-    if not res or res.get("status") != "ok":
-        print("❌", (res or {}).get("message","登入/註冊失敗"))
-        return
-
-    stop_hb = threading.Event()
-    hb_thread = threading.Thread(target=heartbeat_loop, args=(developer, stop_hb), daemon=True) # used to notify server that this client is still alive
-    hb_thread.start()
-
     while True:
-        print("\n=== 開發者平台 ===")
-        print("1. 上架新遊戲 (D1)")
-        print("2. 更新已上架遊戲版本 (D2)")
-        print("3. 下架遊戲 (D3)")
-        print("4. 看看我的遊戲列表")
-        print("5. 登出(bye bye)")
+        print("=== 開發者帳號 ===")
+        print("1. 登入")
+        print("2. 註冊並登入")
+        print("3. 說掰掰(logout)!")
+        choice = input("選擇: ").strip()
 
-        choice = input("請選擇功能: ")
-
-        if choice == "1":
-            upload_game(developer)
-        elif choice == "2":
-            update_game(developer)
-        elif choice == "3":
-            remove_game(developer)
-        elif choice == "4":
-            list_my_games(developer, show=True)
-        elif choice == "5":
-            send_request({"action":"logout","name":developer})
-            stop_hb.set()
-            hb_thread.join(timeout=1)
-            print("bye bye!\n")
-            main_menu()
+        if choice == "3":
+            print("bye bye!")
             return
-        else:
-            print("❌ 無效選項，請重新輸入")
+        if choice not in {"1", "2"}:
+            print("❌ 輸入錯囉朋友，請重新輸入")
+            continue
+
+        developer = input("帳號: ").strip()
+        pwd = input("密碼: ").strip()
+        if not developer or not pwd:
+            print("帳號/密碼不可為空")
+            continue
+
+        action = "login" if choice == "1" else "register"
+        _, res = send_request({"action": action, "name": developer, "password": pwd})
+        if not res or res.get("status") != "ok":
+            print("❌", (res or {}).get("message","登入/註冊失敗"))
+            continue
+
+        # 登入成功，啟動 heartbeat 並進入功能選單
+        stop_hb = threading.Event()
+        hb_thread = threading.Thread(target=heartbeat_loop, args=(developer, stop_hb), daemon=True) # used to notify server that this client is still alive
+        hb_thread.start()
+
+        while True:
+            print("\n=== 開發者平台 ===")
+            print("1. 上架新遊戲 (D1)")
+            print("2. 更新已上架遊戲版本 (D2)")
+            print("3. 下架遊戲 (D3)")
+            print("4. 看看我的遊戲列表")
+            print("5. 登出(bye bye)")
+
+            choice = input("請選擇功能: ")
+
+            if choice == "1":
+                upload_game(developer)
+            elif choice == "2":
+                update_game(developer)
+            elif choice == "3":
+                remove_game(developer)
+            elif choice == "4":
+                list_my_games(developer, show=True)
+            elif choice == "5":
+                send_request({"action":"logout","name":developer})
+                stop_hb.set()
+                hb_thread.join(timeout=1)
+                print("bye bye!\n")
+                break  # 回到登入/註冊選單
+            else:
+                print("❌ 無效選項，請重新輸入")
 
 
 if __name__ == "__main__":
